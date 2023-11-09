@@ -5,16 +5,16 @@ import java.util.Random;
 
 public class Main {
     public static void main(String[] args) {
-        final int serverPort1 = 20000;
-        final int serverPort2 = 20001;
+        final int serverPort = 20000;
+//        final int serverPort2 = 20001;
             // start server socket
-        try (ServerSocket serverSocket1 = new ServerSocket(serverPort1);
-             ServerSocket serverSocket2 = new ServerSocket(serverPort2);
+        try (ServerSocket serverSocket = new ServerSocket(serverPort)
+
              ) {
                     // client 1 connect
-                Socket clientSocket1 = serverSocket1.accept();
+                Socket clientSocket1 = serverSocket.accept();
                     // client 2 connect
-                Socket clientSocket2 = serverSocket1.accept();
+                Socket clientSocket2 = serverSocket.accept();
                     // create input and output object streams for both clients
                 try (
                         // input and output streams for client1
@@ -36,55 +36,52 @@ public class Main {
                         System.out.println("client 2 goes first");
                     }
 
-                    while (true) {
-                        System.out.println("waiting for client transmission....");
-                        // deserialize game data received from client1
-                        try {
-                            gameData recvObject1 = (gameData) inputStream1.readObject();
-                            // deserialize game data received from client2
-                            if (recvObject1 == null) { // check player 1 if the object is not null, this means that player 1
-                                System.out.println("Still waiting....");
-                            } else {
-                                System.out.println("received from client 1");
-                                // just transmitted the object
-                                if (checkGameOver(recvObject1)) { // if game over check returns true, break and end the server
-                                    break;
-                                } else { // if the game over check is false, transmit the object to player 2
-                                    System.out.println("transmitted to client 2");
-                                    outputStream2.writeObject(recvObject1);
-                                }
-                            }
 
-                            gameData recvObject2 = (gameData) inputStream2.readObject();
-                            // check for game over condition to kill the server
-                            // look at the health of each player in the game data object and end loop and close server
-                            // if one is at 0 health
-                            if (recvObject2 == null) { // check player 2 if the object is not null, this means that player 2
-                                System.out.println("Still waiting....");
-                            } else {
-                                System.out.println("received from client 2");
-                                // just transmitted the object
-                                if (checkGameOver(recvObject2)) { // if game over check returns true, break and end the server
-                                    break;
-                                } else { // if the game over check is false, transmit the object to player 1
-                                    outputStream1.writeObject(recvObject2);
-                                    System.out.println("transmitted to client 1");
-                                }
-                            }
-//                        else {
-//                            break;
-//                        }
-                        } catch (IOException | ClassNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    Thread thread1 = new Thread(new clientHandler(inputStream1, outputStream2));
+                    Thread thread2 = new Thread(new clientHandler(inputStream2, outputStream1));
+
+                    thread1.start();
+                    thread2.start();
+
+                    thread1.join();
+                    thread2.join();
+
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+    static class clientHandler implements Runnable {
+        private ObjectInputStream inputStream;
+        private ObjectOutputStream outputStream;
 
+        public clientHandler(ObjectInputStream inputStream, ObjectOutputStream outputStream) {
+            this.inputStream = inputStream;
+            this.outputStream = outputStream;
+        }
+
+        @Override
+        public void run() {
+            while(true){
+                try {
+                    gameData recvObject = (gameData) inputStream.readObject();
+                    if(recvObject.playerOneHealth == 0 | recvObject.playerTwoHealth ==0){
+                        break;
+                    } else {
+                        outputStream.writeObject(recvObject);
+                    }
+
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
         // Class object to be passed between clients
     static class gameData implements Serializable {
         public int playerOneHealth = -1;
