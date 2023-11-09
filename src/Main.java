@@ -68,7 +68,7 @@ public class Main {
             while(true){
                 try {
                     gameData recvObject = (gameData) inputStream.readObject();
-                    if(recvObject.playerOneHealth == 0 | recvObject.playerTwoHealth ==0){
+                    if(recvObject.health == 0){
                         break;
                     } else {
                         outputStream.writeObject(recvObject);
@@ -84,16 +84,16 @@ public class Main {
     }
         // Class object to be passed between clients
     static class gameData implements Serializable {
-        public int playerOneHealth = -1;
-        public int playerTwoHealth = -1;
-        public int playerOneOutgoingDamage = 0;
-        public int playerTwoOutgoingDamage = 0;
+        public int health = -1;
+        public double damage;
+        public int atkRoll;
+
         public gameData(){
             }
     }
 
     static boolean checkGameOver(gameData gameDataObject){
             // return true if either player health is 0, else return false
-        return gameDataObject.playerOneHealth == 0 || gameDataObject.playerTwoHealth == 0;
+        return gameDataObject.health == 0;
     }
 }
