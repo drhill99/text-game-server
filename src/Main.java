@@ -17,17 +17,17 @@ public class Main {
                 Socket clientSocket2 = serverSocket.accept();
                     // create input and output object streams for both clients
                 try (
-                        // input and output streams for client1
+                            // input and output streams for client1
                         ObjectInputStream inputStream1 = new ObjectInputStream(clientSocket1.getInputStream());
                         ObjectOutputStream outputStream1 = new ObjectOutputStream(clientSocket1.getOutputStream());
-                        // input and output streams for client2
+                            // input and output streams for client2
                         ObjectInputStream inputStream2 = new ObjectInputStream(clientSocket2.getInputStream());
                         ObjectOutputStream outputStream2 = new ObjectOutputStream(clientSocket2.getOutputStream());
                 ) {
-                    // randomly choose a player to start, create the object and send to that client first
+                        // randomly choose a player to start, create the object and send to that client first
                     int randomPlayer = new Random().nextInt(2) + 1;
                     gameData gameDataObject = new gameData();
-//                    int randomPlayer = 1;
+
                     if (randomPlayer == 1) {
                         outputStream1.writeObject(gameDataObject);
                         System.out.println("client 1 goes first");
@@ -36,13 +36,13 @@ public class Main {
                         System.out.println("client 2 goes first");
                     }
 
-
+                        // create a thread for each client that receives from that client and passes to the other client
                     Thread thread1 = new Thread(new clientHandler(inputStream1, outputStream2));
                     Thread thread2 = new Thread(new clientHandler(inputStream2, outputStream1));
-
+                        // start threads
                     thread1.start();
                     thread2.start();
-
+                        // wait for threads to complete
                     thread1.join();
                     thread2.join();
 
@@ -55,15 +55,17 @@ public class Main {
         }
     }
     static class clientHandler implements Runnable {
+            // socket input stream
         private ObjectInputStream inputStream;
+            // socket output stream
         private ObjectOutputStream outputStream;
-
+            // parametrized constructor
         public clientHandler(ObjectInputStream inputStream, ObjectOutputStream outputStream) {
             this.inputStream = inputStream;
             this.outputStream = outputStream;
         }
 
-        @Override
+        @Override // override the run method inside the Runnable interface
         public void run() {
             while(true){
                 try {
