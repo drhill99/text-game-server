@@ -68,7 +68,9 @@ public class Main {
             while(true){
                 try {
                     gameData recvObject = (gameData) inputStream.readObject();
-                    if(recvObject.health == 0){
+                    if(recvObject.isGameOver){
+//                        System.out.println("Player health: " + recvObject.health);
+                        outputStream.writeObject(recvObject);
                         break;
                     } else {
                         outputStream.writeObject(recvObject);
@@ -85,7 +87,7 @@ public class Main {
         public int health = -1;
         public double damage;
         public int atkRoll;
-
+        public boolean isGameOver = false;
         public gameData(){
             }
     }
