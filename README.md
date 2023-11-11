@@ -2,7 +2,7 @@
 
 This Java project is a proof of concept of using a network server as an interface between two users playing a text combat game. In the present form the server connects to user on a single machine, but can be modified to function between the server and two users on a network. Utilizing the server is as simple as running the server program which will wait for two clients to connect when the client programs are individually started.
 
-[Software Demo Video](http://youtube.link.goes.here)
+[Software Demo Video](https://www.youtube.com/watch?v=QUA4MrpG9xM)
 
 # Network Communication
 
